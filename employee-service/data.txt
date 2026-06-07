@@ -1,0 +1,31 @@
+@EnableCaching on main class 
+implements serializable for DTO
+
+GET @Cacheable(cacheNames = "employee", key = "#id")
+POST @CachePut(cacheNames = "employee", key = "#result.id")
+PUT @CachePut(cacheNames = "employee", key = "#id")
+DELETE @CacheEvict(cacheNames = "employee", key = "#id")
+
+
+For extra properties like timetolive ,enabletimetoIdle ,and key ad value serialized to store in proper format like string for key or json for response [data] in redis cache 
+
+@Configuration
+public class cacheConfig {
+
+    @Bean
+    public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
+
+        RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
+                .prefixCacheNameWith("my-redis-cache")
+                .entryTtl(Duration.ofSeconds(120))
+                .enableTimeToIdle()
+                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
+
+        return RedisCacheManager.builder(connectionFactory)
+                .cacheDefaults(redisCacheConfiguration)
+                .build();
+    }
+
+
+}
